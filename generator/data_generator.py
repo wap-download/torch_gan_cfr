@@ -181,7 +181,7 @@ def run(run_dict):
 
     which_dataset = '_'.join(str(item) for item in [mA, mB, mC])
     # data_path += '/'+which_dataset+'/'
-    data_path = data_path + file + '_' + str(init_seed) + '/'
+    data_path = data_path + file + '_' + str(init_seed) + '_' + which_dataset + '/'
     if not os.path.exists(data_path + 'info/'):
         os.makedirs(data_path + 'info/')
 

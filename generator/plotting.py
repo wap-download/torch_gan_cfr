@@ -7,7 +7,7 @@ def draw_w(coef1,coef2,coef3,file_path):
     plt.figure(figsize=(20, 8), dpi=80)
 
     x = max([coef1.shape[0],coef2.shape[0],coef3.shape[0]])
-    print(x)
+
     # color
     plt.plot(range(0, coef1.shape[0]), coef1, label="t_AB", color="#F08080")
     plt.plot(range(0, coef2.shape[0]), coef2, label="y1_BC", color="#0000FF", linestyle="--")
