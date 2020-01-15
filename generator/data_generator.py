@@ -6,6 +6,7 @@ from scipy.stats import norm
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from generator.csv2npz import np2npz
+from generator.plotting import draw_w
 
 storage_path = '.'
 
@@ -212,7 +213,8 @@ def run(run_dict):
         temp.append(lindisc(x, t, np.mean(t)))
         csv_writer.writerow(temp)
 
-    print(data_path)
+
     np2npz(data_path, num)
+    draw_w(coefs_1,coefs_2,coefs_3,data_path + 'info/')
 
 
