@@ -101,16 +101,17 @@ def run(run_dict):
     coef_t_AB = run_dict["coef_t_AB"]
     coef_y1_BC = run_dict["coef_y1_BC"]
     coef_y2_BC = run_dict["coef_y2_BC"]
+    use_one = run_dict["use_one"]
 
     dep = 0  # overwright; dep=0 generates harder datasets
     n_trn = size
 
     seed_coef = 10
-    max_dim = 8
+    max_dim = mA + mB + mC + mD
 
     which_benchmark = 'Syn_' + '_'.join(str(item) for item in [sc, sh, dep])
 
-    temp = get_latent(3 * max_dim + mD, seed_coef * init_seed + 4, n_trn, dep)
+    temp = get_latent(max_dim, seed_coef * init_seed + 4, n_trn, dep)
 
     # bias same
     A = temp[:, 0:mA]
@@ -129,8 +130,11 @@ def run(run_dict):
         coefs_1 = np.random.normal(size=mA + mB)
     else:
         coefs_1 = np.array(coef_t_AB)
+    if use_one == "True" or use_one == "T":
+        coefs_1 = np.ones(shape=mA + mB)
     z = np.dot(AB, coefs_1)
-    pi0_t1 = scipy.special.expit(sc * (z + sh))
+    per = np.random.normal(size=n_trn)
+    pi0_t1 = scipy.special.expit(sc * (z + sh + per))
     t = np.array([])
     for p in pi0_t1:
         t = np.append(t, np.random.binomial(1, p, 1))
@@ -141,11 +145,15 @@ def run(run_dict):
         coefs_2 = np.random.normal(size=mB + mC)
     else:
         coefs_2 = np.array(coef_y1_BC)
+    if use_one == "True" or use_one == "T":
+        coefs_2 = np.ones(shape=mB + mC)
     mu_0 = np.dot(BC ** 1, coefs_2) / (mB + mC)
     if random_coef == "True" or random_coef == "T":
         coefs_3 = np.random.normal(size=mB + mC)
     else:
         coefs_3 = np.array(coef_y2_BC)
+    if use_one == "True" or use_one == "T":
+        coefs_3 = np.ones(shape=mB + mC)
     mu_1 = np.dot(BC ** 2, coefs_3) / (mB + mC)
 
     y = np.zeros((n_trn, 2))
@@ -155,13 +163,21 @@ def run(run_dict):
         np.random.seed(3 * seed_coef * init_seed)  # <--
         y[:, 1] = mu_1 + np.random.normal(loc=0., scale=.1, size=n_trn)
     else:
-        median__ = np.median(np.concatenate((mu_0, mu_1), axis=0))
-        mu_0[mu_0 < median__] = 0.
-        mu_0[mu_0 >= median__] = 1.
-        mu_1[mu_1 < median__] = 0.
-        mu_1[mu_1 >= median__] = 1.
-        y[:, 0] = mu_0
-        y[:, 1] = mu_1
+        mu_0 = np.dot(BC ** 1, coefs_2)
+        mu_1 = np.dot(BC ** 1, coefs_3) + 1
+        per = np.random.normal(size=n_trn)
+        mu_0 = scipy.special.expit(sc * (mu_0 + sh + per))
+        per = np.random.normal(size=n_trn)
+        mu_1 = scipy.special.expit(sc * (mu_1 + sh + per))
+        y_0 = np.array([])
+        for p in mu_0:
+            y_0 = np.append(y_0, np.random.binomial(1, p, 1))
+        y_1 = np.array([])
+        for p in mu_1:
+            y_1 = np.append(y_1, np.random.binomial(1, p, 1))
+
+        y[:, 0] = y_0
+        y[:, 1] = y_1
 
     yf = np.array([])
     ycf = np.array([])
